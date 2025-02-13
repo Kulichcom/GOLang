@@ -43,12 +43,12 @@ func (wishList *WishList) getWishtListName() string {
 func (wishList *WishList) showListItems() {
 	// if list is empty, print a message that list is empty
 	if len(wishList.listItems) == 0 {
-		fmt.Print("List is empty")
+		fmt.Printf("List: %s is empty\n", wishList.listName)
 		return
 	}
 
 	for _, thing := range wishList.listItems {
-		fmt.Printf("LIST NAME =  %s | NAME: %s | LINK: %s | COST: %d\n", wishList.listName, thing.thingName, thing.thingLink, thing.thingCost)
+		fmt.Printf("LIST NAME =  %s [ NAME: %s | LINK: %s | COST: %d ]\n", wishList.listName, thing.thingName, thing.thingLink, thing.thingCost)
 	}
 }
 
@@ -103,29 +103,27 @@ func (account *Account) addThingToWhisList() {
 	var listName string
 	fmt.Scanln(&listName)
 
-	for i := 0; i < len(account.Lists); i++ {
-		if account.Lists[i].listName == listName {
-			fmt.Print("Enter thing name: ")
-			fmt.Scanln(&newName)
-
-			fmt.Print("Enter thing link: ")
-			fmt.Scanln(&newLink)
-
-			fmt.Print("Enter thing cost: ")
-			fmt.Scanln(&newCost)
-		} else {
-			fmt.Print("No such list")
-			return
+	var listIndex = -1
+	for i, list := range account.Lists {
+		if list.listName == listName {
+			listIndex = i
+			break
 		}
 	}
+	if listIndex == -1 {
+		fmt.Print("No such list found")
+		return
+	}
+	fmt.Print("Enter new thing name: ")
+	fmt.Scanln(&newName)
+	fmt.Print("Enter new thing link: ")
+	fmt.Scanln(&newLink)
+	fmt.Print("Enter new thing cost: ")
+	fmt.Scanln(&newCost)
 
 	newThing := Thing{thingName: newName, thingLink: newLink, thingCost: newCost}
 
-	for i := 0; i < len(account.Lists); i++ {
-		if account.Lists[i].listName == listName {
-			account.Lists[i].listItems = append(account.Lists[i].listItems, newThing)
-		}
-	}
+	account.Lists[listIndex].listItems = append(account.Lists[listIndex].listItems, newThing)
 }
 
 // function to delete thing from wish list
@@ -177,6 +175,34 @@ func (account *Account) deleteThingFromWishList() {
 	fmt.Printf("ITEM: %s", itemName, " was deleted from the list: %s\n", listname)
 }
 
+// function for delte wish list
+func (account *Account) deleteWishList() {
+	if len(account.Lists) == 0 {
+		fmt.Print("You don't have any wish lists\n")
+		return
+	}
+
+	fmt.Print("Enter wish list name: ")
+	var listname string
+	fmt.Scanln(&listname)
+
+	var listIndex = -1
+	for i, list := range account.Lists {
+		if list.listName == listname {
+			listIndex = i
+			break
+		}
+	}
+
+	if listIndex == -1 {
+		fmt.Print("No such list found\n")
+		return
+	}
+
+	account.Lists = append(account.Lists[:listIndex], account.Lists[listIndex+1:]...)
+	fmt.Printf("WISH LIST: %s", listname, " was deleted\n")
+}
+
 // function to show all wish lists
 func (account *Account) showAllWishList() {
 	if len(account.Lists) == 0 {
@@ -187,6 +213,13 @@ func (account *Account) showAllWishList() {
 	for _, list := range account.Lists {
 		list.showListItems()
 	}
+}
+
+// functiion for show User info
+func (account *Account) showAccountInfo() {
+	fmt.Printf("User name: %s\n", account.userName)
+	fmt.Printf("Age: %d\n", account.userAge)
+	fmt.Printf("Birthday: %s\n", account.Bdate)
 }
 
 func main() {
@@ -212,7 +245,9 @@ func main() {
 		fmt.Print("2. Add thing to wish list\n")
 		fmt.Print("3. Show all wish lists\n")
 		fmt.Print("4. Delete thing from wish list\n")
-		fmt.Print("5. Exit\n")
+		fmt.Print("5. Delete wish list\n")
+		fmt.Print("6. Show account innfo\n")
+		fmt.Print("7. Exit\n")
 
 		var answer int
 		fmt.Print("Enter your answer: ")
@@ -228,6 +263,10 @@ func main() {
 		case 4:
 			account.deleteThingFromWishList()
 		case 5:
+			account.deleteWishList()
+		case 6:
+			account.showAccountInfo()
+		case 7:
 			run = false
 		default:
 			fmt.Print("Error")
