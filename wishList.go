@@ -48,9 +48,7 @@ func (wishList *WishList) showListItems() {
 	}
 
 	for _, thing := range wishList.listItems {
-		fmt.Printf("NAME: %s", thing.thingName)
-		fmt.Printf("LINK: %s", thing.thingLink)
-		fmt.Printf("COSR: %d", thing.thingCost)
+		fmt.Printf("LIST NAME =  %s | NAME: %s | LINK: %s | COST: %d\n", wishList.listName, thing.thingName, thing.thingLink, thing.thingCost)
 	}
 }
 
@@ -130,9 +128,59 @@ func (account *Account) addThingToWhisList() {
 	}
 }
 
-func (account *Account) showAllWishList() {
+// function to delete thing from wish list
+func (account *Account) deleteThingFromWishList() {
 	if len(account.Lists) == 0 {
 		fmt.Print("You don't have any wish lists")
+		return
+	}
+
+	fmt.Print("Enter wish list name: ")
+	var listname string
+	fmt.Scanln(&listname)
+
+	var listIndex = -1
+	for i, list := range account.Lists {
+		if list.listName == listname {
+			listIndex = i
+			break
+		}
+	}
+
+	if listIndex == -1 {
+		fmt.Print("No such wish list found")
+		return
+	}
+
+	if len(account.Lists[listIndex].listItems) == 0 {
+		fmt.Print("Thing list is empty")
+		return
+	}
+
+	fmt.Print("Enter name of the thing to delte: ")
+	var itemName string
+	fmt.Scanln(&itemName)
+
+	var itemIndex = -1
+	for i, thing := range account.Lists[listIndex].listItems {
+		if thing.thingName == itemName {
+			itemIndex = i
+		}
+	}
+
+	if itemIndex == -1 {
+		fmt.Print("No such thing in the list")
+		return
+	}
+
+	account.Lists[listIndex].listItems = append(account.Lists[listIndex].listItems[:itemIndex], account.Lists[listIndex].listItems[itemIndex+1:]...)
+	fmt.Printf("ITEM: %s", itemName, " was deleted from the list: %s\n", listname)
+}
+
+// function to show all wish lists
+func (account *Account) showAllWishList() {
+	if len(account.Lists) == 0 {
+		fmt.Print("You don't have any wish lists\n")
 		return
 	}
 
@@ -163,7 +211,8 @@ func main() {
 		fmt.Print("1. Create wish list\n")
 		fmt.Print("2. Add thing to wish list\n")
 		fmt.Print("3. Show all wish lists\n")
-		fmt.Print("4. Exit\n")
+		fmt.Print("4. Delete thing from wish list\n")
+		fmt.Print("5. Exit\n")
 
 		var answer int
 		fmt.Print("Enter your answer: ")
@@ -177,6 +226,8 @@ func main() {
 		case 3:
 			account.showAllWishList()
 		case 4:
+			account.deleteThingFromWishList()
+		case 5:
 			run = false
 		default:
 			fmt.Print("Error")
