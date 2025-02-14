@@ -292,7 +292,7 @@ func (account *Account) changeThingInWishList() {
 		var newThingName string
 		fmt.Scanln(&newThingName)
 
-		account.Lists[listFound].listItems[thingFound].thingName = newThingName
+		account.Lists[listFound].listItems[thingFound].setThingName(newThingName)
 		fmt.Printf("Name of: %s was changed to: %s\n", account.Lists[listFound].listItems[thingFound].thingName, newThingName)
 
 	case 2:
@@ -300,7 +300,7 @@ func (account *Account) changeThingInWishList() {
 		var newThingLink string
 		fmt.Scanln(&newThingLink)
 
-		account.Lists[listFound].listItems[thingFound].thingLink = newThingLink
+		account.Lists[listFound].listItems[thingFound].setThingLink(newThingLink)
 		fmt.Printf("Link of: %s was changed to: %s\n", account.Lists[listFound].listItems[thingFound].thingName, newThingLink)
 
 	case 3:
@@ -308,7 +308,7 @@ func (account *Account) changeThingInWishList() {
 		var newThingCost int
 		fmt.Scanln(&newThingCost)
 
-		account.Lists[listFound].listItems[thingFound].thingCost = newThingCost
+		account.Lists[listFound].listItems[thingFound].setThingCost(newThingCost)
 		fmt.Printf("Cost of: %s was changed to: %d\n", account.Lists[listFound].listItems[thingFound].thingName, newThingCost)
 
 	default:
