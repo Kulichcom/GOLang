@@ -238,6 +238,7 @@ func (account *Account) deleteWishList() {
 	fmt.Printf("WISH LIST: %s", listname, " was deleted\n")
 }
 
+// function for change thing's info in wish list
 func (account *Account) changeThingInWishList() {
 	if len(account.Lists) == 0 {
 		fmt.Print("You don't have any wish lists\n")
@@ -391,3 +392,4 @@ func main() {
 
 	fmt.Print("Exit")
 }
+
