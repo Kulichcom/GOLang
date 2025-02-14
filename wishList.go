@@ -23,6 +23,18 @@ func (thing *Thing) getThingCost() int {
 	return thing.thingCost
 }
 
+func (thing *Thing) setThingName(thingName string) {
+	thing.thingName = thingName
+}
+
+func (thing *Thing) setThingLink(thingLink string) {
+	thing.thingLink = thingLink
+}
+
+func (thing *Thing) setThingCost(thingCost int) {
+	thing.thingCost = thingCost
+}
+
 // function for create new thing
 func (thing *Thing) createThing(name, link string, cost int) {
 	thing.thingName = name
@@ -32,11 +44,16 @@ func (thing *Thing) createThing(name, link string, cost int) {
 
 type WishList struct {
 	listName  string
+	comment   string
 	listItems []Thing
 }
 
 func (wishList *WishList) getWishtListName() string {
 	return wishList.listName
+}
+
+func (wishList *WishList) getWishListComment() string {
+	return wishList.comment
 }
 
 // function for list items in wish list
@@ -48,7 +65,7 @@ func (wishList *WishList) showListItems() {
 	}
 
 	for _, thing := range wishList.listItems {
-		fmt.Printf("LIST NAME =  %s [ NAME: %s | LINK: %s | COST: %d ]\n", wishList.listName, thing.thingName, thing.thingLink, thing.thingCost)
+		fmt.Printf("LIST NAME =  %s [ NAME: %s | LINK: %s | COST: %d ] COMMENT: %s\n", wishList.listName, thing.thingName, thing.thingLink, thing.thingCost, wishList.comment)
 	}
 }
 
@@ -84,7 +101,18 @@ func (account *Account) createWishList() {
 	var listName string
 	fmt.Scanln(&listName)
 
-	newList := WishList{listName: listName, listItems: []Thing{}}
+	for _, list := range account.Lists {
+		if list.listName == listName {
+			fmt.Print("This list already exists\n")
+			return
+		}
+	}
+
+	fmt.Print("Enter wish list comment: ")
+	var wishListComment string
+	fmt.Scanln(&wishListComment)
+
+	newList := WishList{listName: listName, comment: wishListComment, listItems: []Thing{}}
 	account.Lists = append(account.Lists, newList)
 }
 
@@ -120,6 +148,13 @@ func (account *Account) addThingToWhisList() {
 	fmt.Scanln(&newLink)
 	fmt.Print("Enter new thing cost: ")
 	fmt.Scanln(&newCost)
+
+	for _, thing := range account.Lists[listIndex].listItems {
+		if thing.thingName == newName {
+			fmt.Print("This thing is already in the wish list\n")
+			return
+		}
+	}
 
 	newThing := Thing{thingName: newName, thingLink: newLink, thingCost: newCost}
 
@@ -203,6 +238,84 @@ func (account *Account) deleteWishList() {
 	fmt.Printf("WISH LIST: %s", listname, " was deleted\n")
 }
 
+func (account *Account) changeThingInWishList() {
+	if len(account.Lists) == 0 {
+		fmt.Print("You don't have any wish lists\n")
+		return
+	}
+
+	fmt.Print("Enter wish list name: ")
+	var listName string
+	fmt.Scanln(&listName)
+
+	var listFound = -1
+	for i, list := range account.Lists {
+		if list.listName == listName {
+			listFound = i
+			break
+		}
+	}
+
+	if listFound == -1 {
+		fmt.Print("No such list found\n")
+		return
+	}
+
+	fmt.Print("Enter thing name wish you want to change: ")
+	var thingName string
+	fmt.Scanln(&thingName)
+
+	var thingFound = -1
+	for i, thing := range account.Lists[listFound].listItems {
+		if thing.thingName == thingName {
+			thingFound = i
+			break
+		}
+	}
+
+	if thingFound == -1 {
+		fmt.Print("No such thing found\n")
+		return
+	}
+
+	fmt.Print("Which info you want to cahgne?\n")
+	fmt.Print("1. Thing name\n")
+	fmt.Print("2. Thing link\n")
+	fmt.Print("3. Thing cost\n")
+
+	var answer int
+	fmt.Scanln(&answer)
+
+	switch answer {
+	case 1:
+		fmt.Print("Enter new thing name: ")
+		var newThingName string
+		fmt.Scanln(&newThingName)
+
+		account.Lists[listFound].listItems[thingFound].thingName = newThingName
+		fmt.Printf("Name of: %s was changed to: %s\n", account.Lists[listFound].listItems[thingFound].thingName, newThingName)
+
+	case 2:
+		fmt.Print("Enter new thing link: ")
+		var newThingLink string
+		fmt.Scanln(&newThingLink)
+
+		account.Lists[listFound].listItems[thingFound].thingLink = newThingLink
+		fmt.Printf("Link of: %s was changed to: %s\n", account.Lists[listFound].listItems[thingFound].thingName, newThingLink)
+
+	case 3:
+		fmt.Print("Enter new thing cost: ")
+		var newThingCost int
+		fmt.Scanln(&newThingCost)
+
+		account.Lists[listFound].listItems[thingFound].thingCost = newThingCost
+		fmt.Printf("Cost of: %s was changed to: %d\n", account.Lists[listFound].listItems[thingFound].thingName, newThingCost)
+
+	default:
+		fmt.Print("Error")
+	}
+}
+
 // function to show all wish lists
 func (account *Account) showAllWishList() {
 	if len(account.Lists) == 0 {
@@ -247,7 +360,8 @@ func main() {
 		fmt.Print("4. Delete thing from wish list\n")
 		fmt.Print("5. Delete wish list\n")
 		fmt.Print("6. Show account innfo\n")
-		fmt.Print("7. Exit\n")
+		fmt.Print("7. Change thing in wish list\n")
+		fmt.Print("8. Exit\n")
 
 		var answer int
 		fmt.Print("Enter your answer: ")
@@ -267,6 +381,8 @@ func main() {
 		case 6:
 			account.showAccountInfo()
 		case 7:
+			account.changeThingInWishList()
+		case 8:
 			run = false
 		default:
 			fmt.Print("Error")
