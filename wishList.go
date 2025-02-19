@@ -1,83 +1,86 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"os"
 	"sync"
 )
 
 type Thing struct {
-	thingName string
-	thingLink string
-	thingCost int
+	ThingName string `json:"thingName"`
+	ThingLink string `json:"thingLink"`
+	ThingCost int    `json:"thingCost"`
 }
 
 func (thing *Thing) getThingName() string {
-	return thing.thingName
+	return thing.ThingName
 }
 
 func (thing *Thing) getThingLink() string {
-	return thing.thingLink
+	return thing.ThingLink
 }
 
 func (thing *Thing) getThingCost() int {
-	return thing.thingCost
+	return thing.ThingCost
 }
 
 func (thing *Thing) setThingName(thingName string) {
-	thing.thingName = thingName
+	thing.ThingName = thingName
 }
 
 func (thing *Thing) setThingLink(thingLink string) {
-	thing.thingLink = thingLink
+	thing.ThingLink = thingLink
 }
 
 func (thing *Thing) setThingCost(thingCost int) {
-	thing.thingCost = thingCost
+	thing.ThingCost = thingCost
 }
 
 // function for create new thing
 func (thing *Thing) createThing(name, link string, cost int) {
-	thing.thingName = name
-	thing.thingLink = link
-	thing.thingCost = cost
+	thing.ThingName = name
+	thing.ThingLink = link
+	thing.ThingCost = cost
 }
 
 type WishList struct {
-	listName  string
-	comment   string
-	listItems []Thing
+	ListName  string `json:"listName"`
+	Comment   string `json:"comment"`
+	ListItems []Thing `json:"listItems"`
 }
 
 func (wishList *WishList) getWishtListName() string {
-	return wishList.listName
+	return wishList.ListName
 }
 
 func (wishList *WishList) getWishListComment() string {
-	return wishList.comment
+	return wishList.Comment
 }
 
 // function for list items in wish list
 func (wishList *WishList) showListItems() {
 	// if list is empty, print a message that list is empty
-	if len(wishList.listItems) == 0 {
-		fmt.Printf("List: %s is empty\n", wishList.listName)
+	if len(wishList.ListItems) == 0 {
+		fmt.Printf("List: %s is empty\n", wishList.ListName)
 		return
 	}
 
-	for _, thing := range wishList.listItems {
-		fmt.Printf("LIST NAME =  %s [ NAME: %s | LINK: %s | COST: %d ] COMMENT: %s\n", wishList.listName, thing.thingName, thing.thingLink, thing.thingCost, wishList.comment)
+	for _, thing := range wishList.ListItems {
+		fmt.Printf("LIST NAME =  %s [ NAME: %s | LINK: %s | COST: %d ] COMMENT: %s\n", wishList.ListName, thing.ThingName, thing.ThingLink, thing.ThingCost, wishList.Comment)
 	}
 }
 
 type Account struct {
 	// User's info
-	userName string
-	userAge  int
-	Bdate    string
-	ID       int
+	UserName string `json: "userName"`
+	UserAge  int    `json: "userAge"`
+	Bdate    string `json: "bdate"`
+	ID       int	`json: "id"`
 
 	// All wishlists
-	Lists []WishList
+	Lists []WishList `json: "lists"`
 }
 
 // START: Block for creating account ID
@@ -92,8 +95,36 @@ func generateId() int {
 	accountIdCounter++
 	return accountIdCounter
 }
-
 //END
+
+func SaveAccountToFile(fileName string, account Account) error {
+	data, err := json.MarshalIndent(account, "", " ")
+		if err != nil {
+			return err
+		}
+
+	return ioutil.WriteFile(fileName, data, 0644)
+}
+
+func loadingAccountFromFile(filename string) (Account, error) {
+	var account Account
+	data, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return account, err
+	}
+
+	err = json.Unmarshal(data, &account)
+	return account, err
+}
+
+func fileExists(filename string) bool {
+	info, err := os.Stat(filename)
+	if os.IsNotExist(err) {
+		return false
+	}
+
+	return !info.IsDir()
+}
 
 // function for create new wish list
 func (account *Account) createWishList() {
@@ -102,7 +133,7 @@ func (account *Account) createWishList() {
 	fmt.Scanln(&listName)
 
 	for _, list := range account.Lists {
-		if list.listName == listName {
+		if list.ListName == listName {
 			fmt.Print("This list already exists\n")
 			return
 		}
@@ -112,7 +143,7 @@ func (account *Account) createWishList() {
 	var wishListComment string
 	fmt.Scanln(&wishListComment)
 
-	newList := WishList{listName: listName, comment: wishListComment, listItems: []Thing{}}
+	newList := WishList{ListName: listName, Comment: wishListComment, ListItems: []Thing{}}
 	account.Lists = append(account.Lists, newList)
 }
 
@@ -133,7 +164,7 @@ func (account *Account) addThingToWhisList() {
 
 	var listIndex = -1
 	for i, list := range account.Lists {
-		if list.listName == listName {
+		if list.ListName == listName {
 			listIndex = i
 			break
 		}
@@ -149,16 +180,16 @@ func (account *Account) addThingToWhisList() {
 	fmt.Print("Enter new thing cost: ")
 	fmt.Scanln(&newCost)
 
-	for _, thing := range account.Lists[listIndex].listItems {
-		if thing.thingName == newName {
+	for _, thing := range account.Lists[listIndex].ListItems {
+		if thing.ThingName == newName {
 			fmt.Print("This thing is already in the wish list\n")
 			return
 		}
 	}
 
-	newThing := Thing{thingName: newName, thingLink: newLink, thingCost: newCost}
+	newThing := Thing{ThingName: newName, ThingLink: newLink, ThingCost: newCost}
 
-	account.Lists[listIndex].listItems = append(account.Lists[listIndex].listItems, newThing)
+	account.Lists[listIndex].ListItems = append(account.Lists[listIndex].ListItems, newThing)
 }
 
 // function to delete thing from wish list
@@ -174,7 +205,7 @@ func (account *Account) deleteThingFromWishList() {
 
 	var listIndex = -1
 	for i, list := range account.Lists {
-		if list.listName == listname {
+		if list.ListName == listname {
 			listIndex = i
 			break
 		}
@@ -185,7 +216,7 @@ func (account *Account) deleteThingFromWishList() {
 		return
 	}
 
-	if len(account.Lists[listIndex].listItems) == 0 {
+	if len(account.Lists[listIndex].ListItems) == 0 {
 		fmt.Print("Thing list is empty")
 		return
 	}
@@ -195,8 +226,8 @@ func (account *Account) deleteThingFromWishList() {
 	fmt.Scanln(&itemName)
 
 	var itemIndex = -1
-	for i, thing := range account.Lists[listIndex].listItems {
-		if thing.thingName == itemName {
+	for i, thing := range account.Lists[listIndex].ListItems {
+		if thing.ThingName == itemName {
 			itemIndex = i
 		}
 	}
@@ -206,7 +237,7 @@ func (account *Account) deleteThingFromWishList() {
 		return
 	}
 
-	account.Lists[listIndex].listItems = append(account.Lists[listIndex].listItems[:itemIndex], account.Lists[listIndex].listItems[itemIndex+1:]...)
+	account.Lists[listIndex].ListItems = append(account.Lists[listIndex].ListItems[:itemIndex], account.Lists[listIndex].ListItems[itemIndex+1:]...)
 	fmt.Printf("ITEM: %s", itemName, " was deleted from the list: %s\n", listname)
 }
 
@@ -223,7 +254,7 @@ func (account *Account) deleteWishList() {
 
 	var listIndex = -1
 	for i, list := range account.Lists {
-		if list.listName == listname {
+		if list.ListName == listname {
 			listIndex = i
 			break
 		}
@@ -251,7 +282,7 @@ func (account *Account) changeThingInWishList() {
 
 	var listFound = -1
 	for i, list := range account.Lists {
-		if list.listName == listName {
+		if list.ListName == listName {
 			listFound = i
 			break
 		}
@@ -267,8 +298,8 @@ func (account *Account) changeThingInWishList() {
 	fmt.Scanln(&thingName)
 
 	var thingFound = -1
-	for i, thing := range account.Lists[listFound].listItems {
-		if thing.thingName == thingName {
+	for i, thing := range account.Lists[listFound].ListItems {
+		if thing.ThingName == thingName {
 			thingFound = i
 			break
 		}
@@ -293,24 +324,24 @@ func (account *Account) changeThingInWishList() {
 		var newThingName string
 		fmt.Scanln(&newThingName)
 
-		account.Lists[listFound].listItems[thingFound].setThingName(newThingName)
-		fmt.Printf("Name of: %s was changed to: %s\n", account.Lists[listFound].listItems[thingFound].thingName, newThingName)
+		account.Lists[listFound].ListItems[thingFound].setThingName(newThingName)
+		fmt.Printf("Name of: %s was changed to: %s\n", account.Lists[listFound].ListItems[thingFound].ThingName, newThingName)
 
 	case 2:
 		fmt.Print("Enter new thing link: ")
 		var newThingLink string
 		fmt.Scanln(&newThingLink)
 
-		account.Lists[listFound].listItems[thingFound].setThingLink(newThingLink)
-		fmt.Printf("Link of: %s was changed to: %s\n", account.Lists[listFound].listItems[thingFound].thingName, newThingLink)
+		account.Lists[listFound].ListItems[thingFound].setThingLink(newThingLink)
+		fmt.Printf("Link of: %s was changed to: %s\n", account.Lists[listFound].ListItems[thingFound].ThingName, newThingLink)
 
 	case 3:
 		fmt.Print("Enter new thing cost: ")
 		var newThingCost int
 		fmt.Scanln(&newThingCost)
 
-		account.Lists[listFound].listItems[thingFound].setThingCost(newThingCost)
-		fmt.Printf("Cost of: %s was changed to: %d\n", account.Lists[listFound].listItems[thingFound].thingName, newThingCost)
+		account.Lists[listFound].ListItems[thingFound].setThingCost(newThingCost)
+		fmt.Printf("Cost of: %s was changed to: %d\n", account.Lists[listFound].ListItems[thingFound].ThingName, newThingCost)
 
 	default:
 		fmt.Print("Error")
@@ -331,25 +362,41 @@ func (account *Account) showAllWishList() {
 
 // functiion for show User info
 func (account *Account) showAccountInfo() {
-	fmt.Printf("User name: %s\n", account.userName)
-	fmt.Printf("Age: %d\n", account.userAge)
+	fmt.Printf("User name: %s\n", account.UserName)
+	fmt.Printf("Age: %d\n", account.UserAge)
 	fmt.Printf("Birthday: %s\n", account.Bdate)
 }
 
 func main() {
-	fmt.Print("Enter your name: ")
-	var name string
-	fmt.Scanln(&name)
+	const dataFile = "account.json"
 
-	fmt.Print("Enter your age: ")
-	var age int
-	fmt.Scanln(&age)
+	var account Account
 
-	fmt.Print("Enter your birthday: ")
-	var bdate string
-	fmt.Scanln(&bdate)
+	if fileExists(dataFile) {
+		loadedAccount, err := loadingAccountFromFile(dataFile)
+		if err != nil {
+			fmt.Print("Error loading account: ", err)
+			return
+		}
 
-	account := Account{userName: name, userAge: age, Bdate: bdate, ID: generateId()}
+		account = loadedAccount
+		fmt.Print("Account loaded from file\n")
+	} else {
+
+		fmt.Print("Enter your name: ")
+		var name string
+		fmt.Scanln(&name)
+
+		fmt.Print("Enter your age: ")
+		var age int
+		fmt.Scanln(&age)
+
+		fmt.Print("Enter your birthday: ")
+		var bdate string
+		fmt.Scanln(&bdate)
+
+		account = Account{UserName: name, UserAge: age, Bdate: bdate, ID: generateId()}
+	}
 
 	run := true
 
@@ -384,6 +431,11 @@ func main() {
 		case 7:
 			account.changeThingInWishList()
 		case 8:
+			if err := SaveAccountToFile(dataFile, account); err != nil {
+				fmt.Print("Error saving accoung: \n", err)
+			} else {
+				fmt.Print("Account data saved.\n")
+			}
 			run = false
 		default:
 			fmt.Print("Error")
@@ -392,4 +444,3 @@ func main() {
 
 	fmt.Print("Exit")
 }
-
